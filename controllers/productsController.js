@@ -72,15 +72,19 @@ router.get("/rent/:id", async(req, res) => {
 
 router.get("/details/:id", async(req, res) => {
     let currItem = await req.storage.getById(req.params.id);
-    let isRent = currItem.rentUsers.find(x => x._id == req.user._id);
+    let isRent = false;
     let allRentUsers = currItem.rentUsers.map(x => x.username);
+
+    if(req.user) {
+        isRent = currItem.rentUsers.find(x => x._id == req.user._id);
+        if(currItem.owner._id == req.user._id) {
+            currItem.isOwner = true;
+        }
+    };
 
     if(allRentUsers.length > 0) {
         currItem.allRentUsers = allRentUsers.join(", ");
     };
-    if(currItem.owner._id == req.user._id) {
-        currItem.isOwner = true;
-    }
     if(currItem.pieces > 0) {
         currItem.availablePieces = true;
     }
