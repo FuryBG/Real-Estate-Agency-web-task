@@ -1,0 +1,49 @@
+        <!-- In case of error, you should display div with class "errorContainer" -->
+        <!-- You can choose to display the first error or all of them (error message/s in your opinion) -->
+        {{#if errors}}
+        <div>
+            <div class="errorContainer">
+                {{#each errors}}
+                <p>{{this}}</p>
+                {{/each}}
+            </div>
+        </div>
+        {{/if}}
+
+<main>
+
+            <section id="register-page">
+                <div class="boxs">
+                    <div class="card-image">
+                        <h2 class="card-heading">
+                            Create your account
+                        </h2>
+                    </div>
+                    <form class="card-form" action="" method="post">
+                        <div class="input">
+                            <input type="text" class="input-field" placeholder="Alexander Parkinson" id="name" name="name" value="{{info.name}}" />
+                            <label class="name">Full Name</label>
+                        </div>
+                        <div class="input">
+                            <input type="text" class="input-field" placeholder="alexander" id="username" name="username" value="{{info.username}}" />
+                            <label class="username">Username</label>
+                        </div>
+                        <div class="input">
+                            <input type="password" class="input-field" id="password" name="password" placeholder="******" />
+                            <label class="password">Password</label>
+                        </div>
+                        <div class="input">
+                            <input type="password" class="input-field" id="re-password" name="rePass" placeholder="******" />
+                            <label class="re-password">Repeat Password</label>
+                        </div>
+                        <div class="action">
+                            <button class="action-button">Get started</button>
+                        </div>
+                    </form>
+
+                    <div class="card-info">
+                        <small>Already have an account?<a href="/auth/login"> Sign in</a>
+                        </small>
+                    </div>
+                </div>
+            </section>
