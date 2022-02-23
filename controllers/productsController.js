@@ -24,8 +24,12 @@ router.get("/delete/:id", async(req, res) => {
 });
 
 router.get("/edit/:id", async(req, res) => {
-    let currItem = await req.storage.getById(req.params.id);
-    res.render("edit.hbs", {currItem});
+    try{
+        let currItem = await req.storage.getById(req.params.id);
+        res.render("edit.hbs", {currItem});
+    }catch(err) {
+        res.redirect("/notfound");
+    }
 });
 
 router.post("/edit/:id", async(req, res) => {
@@ -66,18 +70,19 @@ router.get("/all", async(req, res) => {
 });
 
 router.get("/rent/:id", async(req, res) => {
-    await req.storage.rent(req.params.id, req.user._id);
+    await req.storage.rent(req.params.id, req.session.user._id);
     res.redirect(`/details/${req.params.id}`);
 });
 
 router.get("/details/:id", async(req, res) => {
+    try {
     let currItem = await req.storage.getById(req.params.id);
     let isRent = false;
     let allRentUsers = currItem.rentUsers.map(x => x.username);
 
-    if(req.user) {
-        isRent = currItem.rentUsers.find(x => x._id == req.user._id);
-        if(currItem.owner._id == req.user._id) {
+    if(req.session.user) {
+        isRent = currItem.rentUsers.find(x => x._id == req.session.user._id);
+        if(currItem.owner._id == req.session.user._id) {
             currItem.isOwner = true;
         }
     };
@@ -93,6 +98,9 @@ router.get("/details/:id", async(req, res) => {
     }
 
     res.render("details.hbs", currItem);
+}catch(err) {
+    res.redirect("/notfound");
+};
 });
 
 router.get("/create", (req, res) => {
@@ -124,7 +132,7 @@ router.post("/create", async(req, res) => {
             throw new Error(errors.join("\n"));
         };
         
-        req.body.owner = req.user._id;
+        req.body.owner = req.session.user._id;
         await req.storage.create(req.body);
         res.redirect("/");
     }catch(err) {

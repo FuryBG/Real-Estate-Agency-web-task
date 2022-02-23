@@ -1,17 +1,15 @@
 const userService = require("../services/user");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const { TOKEN_SECRET, COOKIE_NAME } = require("../config");
 
 module.exports = () => (req, res, next) => {
-        if(parseToken(req, res)) {
+    parseToken();
         req.auth = {
             register,
             login,
             logout
         }
         next();
-    }
 
 
     async function register(username, password) {
@@ -26,7 +24,7 @@ module.exports = () => (req, res, next) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = await userService.createUser(username, hashedPassword);
         
-        res.cookie(COOKIE_NAME ,generateToken(user));
+        req.session.user = generateToken(user);
     };
     
     async function login(username, password) {
@@ -43,12 +41,30 @@ module.exports = () => (req, res, next) => {
             console.log("Incorrect password!");
             throw new Error("Username or password is wrong!");
         }
-    
-        res.cookie(COOKIE_NAME ,generateToken(existing));
+
+        req.session.user = generateToken(existing);
     };
 
     function logout() {
-        res.clearCookie(COOKIE_NAME);
+        delete req.session.user;
+    };
+
+
+
+
+
+    function generateToken(userData) {
+        const token = {
+            _id: userData._id,
+            email: userData.email
+        };
+        return token;
+    };
+    
+    function parseToken() {
+        if(req.session.user) {
+            res.locals.user = req.session.user
+        };
     };
 
 };
@@ -59,28 +75,6 @@ module.exports = () => (req, res, next) => {
 
 
 
-function generateToken(userData) {
-    const token = jwt.sign({
-        _id: userData._id,
-        email: userData.email
-    }, TOKEN_SECRET);
-    return token;
-};
 
-function parseToken(req, res) {
-    const token = req.cookies[COOKIE_NAME];
-    if(token) {
-    try {
-    const userData = jwt.verify(token, TOKEN_SECRET);
-        req.user = userData;
-        res.locals.user = userData;
-    }catch(err) {
-        res.clearCookie(COOKIE_NAME);
-        res.redirect("/auth/login");
-        return false;
-    }
-}
-return true;
-};
 
 
